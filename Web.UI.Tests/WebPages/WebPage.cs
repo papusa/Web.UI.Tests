@@ -9,117 +9,151 @@ using Web.UI.Tests.Models;
 using Web.UI.Tests.Selenium;
 using Web.UI.Tests.Selenium.WebApplicationExtensions;
 
-namespace Web.UI.Tests.WebPages {
-    class WebPage {
+namespace Web.UI.Tests.WebPages
+{
+    class WebPage
+    {
         public static WebApplication Web => WebApplications.Web;
 
-        public static void InitializeSession(string userRole, ApplicationContext appContext) {
+        public static void InitializeSession(string userRole, ApplicationContext appContext)
+        {
             Web.AddSession(userRole, appContext);
         }
 
-        public static void Refresh() {
+        public static void OpenHomePage()
+        {
+            Web.Open(Config.HomePage);
+        }
+
+        public static void Refresh()
+        {
             Web.Refresh();
         }
 
-        public static void SwitchToUser(string userRole, ApplicationContext appContext) {
+        public static void SwitchToUser(string userRole, ApplicationContext appContext)
+        {
             Web.SwitchToUser(userRole, appContext);
         }
 
-        public static bool IsNewWindowOpen() {
-            try {
+        public static bool IsNewWindowOpen()
+        {
+            try
+            {
                 Web.GetNewWindow();
                 return true;
             }
-            catch {
+            catch
+            {
                 return false;
             }
         }
 
-        protected static void RegisterNewSessionWindow(string windowName) {
+        protected static void RegisterNewSessionWindow(string windowName)
+        {
             Web.SessionWindows.Add(GenerateCurrentUsersWindowName(windowName), Web.GetNewWindow());
         }
 
-        protected static void UnregisterSessionWindow(string windowName) {
+        protected static void UnregisterSessionWindow(string windowName)
+        {
             Web.SessionWindows.Remove(GenerateCurrentUsersWindowName(windowName));
         }
 
-        protected static string GetSessionWindowByName(string windowName) {
+        protected static string GetSessionWindowByName(string windowName)
+        {
             return Web.SessionWindows[GenerateCurrentUsersWindowName(windowName)];
         }
 
-        protected static void ClickAndWait(By locator) {
+        protected static void ClickAndWait(By locator)
+        {
             Web.Click(locator);
             WaitWhileLoading();
         }
 
-        protected static void ClickAndWait(IWebElement element) {
+        protected static void ClickAndWait(IWebElement element)
+        {
             Web.Click(element);
             WaitWhileLoading();
         }
 
-        protected static void ClickJsAndWait(By locator) {
+        protected static void ClickJsAndWait(By locator)
+        {
             Web.ClickJs(locator);
             WaitWhileLoading();
         }
 
-        protected static void ClickJsAndWait(IWebElement element) {
+        protected static void ClickJsAndWait(IWebElement element)
+        {
             Web.ClickJs(element);
             WaitWhileLoading();
         }
 
-        protected static void WaitWhileLoading() {
+        protected static void WaitWhileLoading()
+        {
             var currentTimeInSeconds = 0;
-            while (IsNotTimedOut(currentTimeInSeconds)) {
+            while (IsNotTimedOut(currentTimeInSeconds))
+            {
                 Thread.Sleep(1000);
                 currentTimeInSeconds++;
             }
         }
 
-        protected static bool IsNotTimedOut(int currentTimeInSeconds) {
+        protected static bool IsNotTimedOut(int currentTimeInSeconds)
+        {
             return currentTimeInSeconds <= Config.TimeOut;
         }
 
-        protected static bool IsTimedOut(int currentTimeInSeconds) {
+        protected static bool IsTimedOut(int currentTimeInSeconds)
+        {
             return currentTimeInSeconds >= Config.TimeOut;
         }
 
-        protected static bool IsNotTimedOutInMs(int currentMs) {
+        protected static bool IsNotTimedOutInMs(int currentMs)
+        {
             return currentMs <= Config.TimeOut * 1000;
         }
 
-        protected static bool IsTimedOutInMs(int currentMs) {
+        protected static bool IsTimedOutInMs(int currentMs)
+        {
             return currentMs >= Config.TimeOut * 1000;
         }
 
-        protected static void CommonFillInFields(List<InputField> fieldsFromTable, List<Field> fieldsOnPage) {
-            fieldsFromTable.ForEach(x => {
+        protected static void CommonFillInFields(List<InputField> fieldsFromTable, List<Field> fieldsOnPage)
+        {
+            fieldsFromTable.ForEach(x =>
+            {
                 var fieldToEnterName = x.FieldName;
                 var fieldValue = x.FieldValue;
-                if (fieldValue != "$Skip.Value") {
+                if (fieldValue != "$Skip.Value")
+                {
                     var fieldToEnter = fieldsOnPage.Find(f => f.Name == fieldToEnterName);
-                    if (fieldToEnter != null) {
+                    if (fieldToEnter != null)
+                    {
                         ProcessField(fieldToEnter, fieldValue);
                     }
                 }
             });
         }
 
-        private static bool IsLoadingSpinVisible(By loadingSpin) {
+        private static bool IsLoadingSpinVisible(By loadingSpin)
+        {
             throw new NotImplementedException();
         }
 
-        private static string GenerateCurrentUsersWindowName(string windowName) {
+        private static string GenerateCurrentUsersWindowName(string windowName)
+        {
             return $"{windowName} {Web.CurrentUser}";
         }
 
-        private static void ProcessField(Field fieldFromPage, string fieldValue) {
+        private static void ProcessField(Field fieldFromPage, string fieldValue)
+        {
             //WaitWhileLoading();
             var locator = fieldFromPage.Locator;
             Web.MoveToElement(locator).Perform();
 
             var ch = !string.IsNullOrEmpty(fieldValue) ? fieldValue.First() : '\0';
 
-            switch (fieldFromPage.FieldType) {
+            switch (fieldFromPage.FieldType)
+            {
                 case ElementType.Input:
                     ProcessInput(fieldValue, locator);
                     break;
@@ -140,11 +174,13 @@ namespace Web.UI.Tests.WebPages {
             //WaitWhileLoading();
         }
 
-        public static string GetFieldValue(Field field) {
+        public static string GetFieldValue(Field field)
+        {
             var locator = field.Locator;
             Web.MoveToElement(locator).Perform();
 
-            switch (field.FieldType) {
+            switch (field.FieldType)
+            {
                 case ElementType.Input:
                     return Web.GetValueAttribute(locator);
                 case ElementType.Select:
@@ -159,37 +195,47 @@ namespace Web.UI.Tests.WebPages {
             }
         }
 
-        public static void ProcessInput(string fieldValue, By locator) {
-            if (fieldValue.EmptyValueToEnter()) {
+        public static void ProcessInput(string fieldValue, By locator)
+        {
+            if (fieldValue.EmptyValueToEnter())
+            {
                 Web.Clear(locator);
             }
-            else {
+            else
+            {
                 Web.TypeNewText(locator, fieldValue);
             }
         }
 
-        public static void ProcessInput(string fieldValue, IWebElement locator) {
-            if (fieldValue.EmptyValueToEnter()) {
+        public static void ProcessInput(string fieldValue, IWebElement locator)
+        {
+            if (fieldValue.EmptyValueToEnter())
+            {
                 Web.Clear(locator);
             }
-            else {
+            else
+            {
                 Web.TypeNewText(locator, fieldValue);
             }
         }
 
-        private static void ProcessCheckbox(string fieldValue, By locator) {
-            if (fieldValue.EmptyValueToEnter() || !fieldValue.ToBool()) {
+        private static void ProcessCheckbox(string fieldValue, By locator)
+        {
+            if (fieldValue.EmptyValueToEnter() || !fieldValue.ToBool())
+            {
                 Web.UncheckCheckbox(locator);
                 return;
             }
 
             var tick = fieldValue.ToBool();
-            if (tick) {
+            if (tick)
+            {
                 Web.TickUnselectedCheckbox(locator);
             }
         }
 
-        private static void ProcessRadioButton(string fieldValue, By locator) {
+        private static void ProcessRadioButton(string fieldValue, By locator)
+        {
             throw new NotImplementedException();
         }
     }
